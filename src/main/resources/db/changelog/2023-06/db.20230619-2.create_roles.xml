@@ -1,0 +1,40 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet id="20230619-2-1" author="SGagarinov" logicalFilePath="db.20230619-2.create_roles.xml">
+        <createSequence sequenceName="roles_seq_id" incrementBy="1" startValue="1" />
+    </changeSet>
+    <changeSet id="20230619-2-2" author="SGagarinov" logicalFilePath="db.20230619-2.create_roles.xml">
+        <createTable tableName="roles">
+            <column name="id" type="bigint" defaultValueSequenceNext="roles_seq_id">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="roles_id"/>
+            </column>
+            <column name="user_login" type="varchar(255)" >
+                <constraints nullable="false" />
+            </column>
+            <column name="role" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="is_active" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="20230619-2-3" author="SGagarinov" logicalFilePath="db.20230619-2.create_roles.xml">
+        <addForeignKeyConstraint baseTableName="roles" baseColumnNames="user_login" constraintName="roles_user_login_fkey"
+                                 referencedTableName="users"
+                                 referencedColumnNames="login" />
+    </changeSet>
+    <changeSet id="20230619-2-4" author="SGagarinov" logicalFilePath="db.20230619-2.create_roles.xml">
+        <insert tableName="roles">
+            <column name="user_login">admin</column>
+            <column name="role">ADMIN</column>
+            <column name="is_active">true</column>
+        </insert>
+    </changeSet>
+    <changeSet id="20230619-2-5" author="SGagarinov" logicalFilePath="db.20230619-2.create_roles.xml">
+        <insert tableName="roles">
+            <column name="user_login">user</column>
+            <column name="role">USER</column>
+            <column name="is_active">true</column>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
