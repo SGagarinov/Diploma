@@ -53,6 +53,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                     .disable()
                     .authorizeRequests()
                     .requestMatchers("/login*")
+                    .permitAll()
+                    .requestMatchers("/logout*")
                     .permitAll();
             return http.build();
     }

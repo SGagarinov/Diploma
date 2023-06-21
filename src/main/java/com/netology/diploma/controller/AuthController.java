@@ -5,9 +5,7 @@ import com.netology.diploma.dto.auth.AuthResponse;
 import com.netology.diploma.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -28,8 +26,14 @@ public class AuthController {
                 new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
+    @GetMapping("login")
+    public ResponseEntity<?> login() {
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
     @PostMapping("/logout")
-    public String logout() {
-        return "logout";
+    public ResponseEntity<?> logout(@RequestHeader("auth-token") String token) {
+        authService.logout(token);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 }
