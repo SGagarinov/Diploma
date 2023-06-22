@@ -3,12 +3,15 @@ package com.netology.diploma.controller;
 import com.netology.diploma.dto.files.FileResponse;
 import com.netology.diploma.entity.File;
 import com.netology.diploma.service.FileService;
-import com.netology.diploma.service.Mapper;
+import com.netology.diploma.util.Mapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +30,7 @@ public class FileController {
     }
 
     @PostMapping("/file")
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public ResponseEntity<?> upload(@RequestHeader("auth-token") String authToken, @RequestParam("filename") String filename, @RequestBody MultipartFile file) throws IOException {
         try {
             if (authToken.isEmpty())
@@ -45,7 +48,7 @@ public class FileController {
     }
 
     @PutMapping("/file")
-    @Secured({"ROLE_ADMIN"})
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> rename(@RequestHeader("auth-token") String authToken, @RequestParam("filename") String filename, @RequestBody Map<String, String> fileNameRequest) {
         try {
             if (authToken.isEmpty())
@@ -63,7 +66,7 @@ public class FileController {
     }
 
     @DeleteMapping("/file")
-    @Secured({"ROLE_ADMIN"})
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> delete(@RequestHeader("auth-token") String authToken, @RequestParam("filename") String filename) {
         try {
             if (authToken.isEmpty())
@@ -81,29 +84,28 @@ public class FileController {
     }
 
     @GetMapping("/file")
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    public ResponseEntity<?> download(@RequestHeader("auth-token") String authToken, @RequestParam("filename") String filename) {
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public ResponseEntity<byte[]> download(@RequestHeader("auth-token") String authToken, @RequestParam("filename") String filename) {
         try {
             if (authToken.isEmpty())
-                new ResponseEntity<>("Unauthorized error", HttpStatus.UNAUTHORIZED);
+                throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Unauthorized error");
             if (filename.isEmpty())
-                return new ResponseEntity<>("Error input data", HttpStatus.BAD_REQUEST);
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Error input data");
 
             File file = fileService.download(authToken, filename);
-            return file != null
-                    ? ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(file.getType()))
+            if (file != null)
+                    return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                    .body(file.getContent())
-                    : new ResponseEntity<>("Unauthorized error", HttpStatus.UNAUTHORIZED);
+                    .body(file.getContent());
+            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Unauthorized error");
         }
         catch (RuntimeException ex) {
-            return new ResponseEntity<>("Error download file", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error getting file list");
         }
     }
 
     @GetMapping("/list")
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public ResponseEntity<List<FileResponse>> getAllFiles(@RequestHeader("auth-token") String authToken, @RequestParam("limit") int limit) {
         try {
             if (authToken.isEmpty())

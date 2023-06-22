@@ -4,10 +4,13 @@ import com.netology.diploma.dto.auth.AuthRequest;
 import com.netology.diploma.entity.User;
 import com.netology.diploma.repository.UserRepository;
 import com.netology.diploma.util.TokenStorage;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -28,11 +31,18 @@ public class AuthService {
         this.tokenStorage = tokenStorage;
     }
 
-    public String login(AuthRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public String login(HttpServletRequest http, AuthRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException {
         User user = userRepository.getByLogin(request);
         if (user != null) {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            //Аутентификация
+            UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword());
+            Authentication authentication = authenticationManager.authenticate(authRequest);
+            SecurityContext securityContext = SecurityContextHolder.getContext();
+            securityContext.setAuthentication(authentication);
+
+            HttpSession session = http.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
             String token = UUID.randomUUID().toString();
             tokenStorage.getTokenList().put("Bearer " + token, user);
             return token;
