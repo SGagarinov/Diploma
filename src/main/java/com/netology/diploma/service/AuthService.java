@@ -1,9 +1,11 @@
 package com.netology.diploma.service;
 
 import com.netology.diploma.dto.auth.AuthRequest;
+import com.netology.diploma.entity.User;
 import com.netology.diploma.repository.UserRepository;
 import com.netology.diploma.util.TokenStorage;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,14 +29,15 @@ public class AuthService {
     }
 
     public String login(AuthRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        if (userRepository.getByLogin(request)) {
+        User user = userRepository.getByLogin(request);
+        if (user != null) {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String token = UUID.randomUUID().toString();
-            tokenStorage.getTokenList().put(request.getLogin(), token);
+            tokenStorage.getTokenList().put("Bearer " + token, user);
             return token;
         }
-        return null;
+        throw new BadCredentialsException("Bad credentials");
     }
     public void logout(String authToken) {
         tokenStorage.getTokenList().remove(authToken);

@@ -1,18 +1,18 @@
 package com.netology.diploma.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.time.LocalDate;
-import java.util.Objects;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "files")
 public class File {
 
     @Id
+    @SequenceGenerator(name = "files_seq_id",
+            sequenceName = "files_seq_id",
+            initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "files_seq_id")
     @Column(name = "id")
     private Long id;
 
@@ -26,7 +26,7 @@ public class File {
     private String description;
 
     @Column(name = "create_date")
-    private LocalDate createDate;
+    private LocalDateTime createDate;
 
     @Column(name = "create_user", length = 255)
     private String createUser;
@@ -73,11 +73,11 @@ public class File {
         this.description = description;
     }
 
-    public LocalDate getCreateDate() {
+    public LocalDateTime getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(LocalDate createDate) {
+    public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
 

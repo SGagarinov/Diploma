@@ -24,17 +24,19 @@ public class UserRepository {
         this.encoder = encoder;
     }
 
-    public Boolean getByLogin(AuthRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public User getByLogin(AuthRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<User> query = builder.createQuery(User.class);
         Root<User> root = query.from(User.class);
 
         query.select(root)
-                .where(builder.and(builder.equal(root.get("login"), request.getLogin())));
-//                                builder.isTrue(root.get("is_active"))));
+                .where(builder.and(builder.equal(root.get("login"), request.getLogin())),
+                                builder.isTrue(root.get("isActive")));
         List<User> result = manager.createQuery(query).getResultList();
         if (result.isEmpty())
-            return false;
-        return encoder.matches(request.getPassword(), result.get(0).getPassword());
+            return null;
+        if (encoder.matches(request.getPassword(), result.get(0).getPassword()))
+            return result.get(0);
+        return null;
     }
 }

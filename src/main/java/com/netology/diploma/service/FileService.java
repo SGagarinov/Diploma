@@ -1,12 +1,14 @@
 package com.netology.diploma.service;
 
 import com.netology.diploma.entity.File;
+import com.netology.diploma.entity.User;
 import com.netology.diploma.repository.FileRepository;
 import com.netology.diploma.util.TokenStorage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class FileService {
@@ -19,23 +21,38 @@ public class FileService {
         this.tokenStorage = tokenStorage;
     }
 
-    public void upload(String authToken, String filename, MultipartFile file) throws IOException {
-        fileRepository.save(file, getUser(authToken));
+    public boolean upload(String authToken, String filename, MultipartFile file) throws IOException {
+        User user = tokenStorage.getTokenList().get(authToken);
+        if (user != null)
+            return fileRepository.save(file, user.getLogin());
+        return false;
     }
 
-    public void delete(String authToken, String filename) {
-        fileRepository.delete(filename);
+    public boolean delete(String authToken, String filename) {
+        User user = tokenStorage.getTokenList().get(authToken);
+        if (user != null)
+            return fileRepository.delete(filename);
+        return false;
     }
 
     public File download(String authToken, String filename) {
-        return fileRepository.downloadByName(filename);
+        User user = tokenStorage.getTokenList().get(authToken);
+        if (user != null)
+            return fileRepository.downloadByName(filename);
+        return null;
     }
 
-    public void rename(String filename, String newFilename) {
-        fileRepository.rename(filename, newFilename);
+    public boolean rename(String authToken, String filename, String newFilename) {
+        User user = tokenStorage.getTokenList().get(authToken);
+        if (user != null)
+            return fileRepository.rename(filename, newFilename);
+        return false;
     }
 
-    private String getUser(String token) {
-        return tokenStorage.getTokenList().get(token);
+    public List<File> getList(String authToken, int limit) {
+        User user = tokenStorage.getTokenList().get(authToken);
+        if (user != null)
+            return fileRepository.getAllRecords(limit);
+        return null;
     }
 }

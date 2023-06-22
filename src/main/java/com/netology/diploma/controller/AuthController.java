@@ -22,8 +22,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String token = authService.login(authRequest);
-        return token != null ? new ResponseEntity<>(new AuthResponse(token), HttpStatus.OK) :
-                new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(new AuthResponse(token), HttpStatus.OK);
     }
 
     @GetMapping("login")
@@ -34,6 +33,6 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("auth-token") String token) {
         authService.logout(token);
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok("Success logout");
     }
 }
