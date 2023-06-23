@@ -31,63 +31,21 @@ public class FileRepository {
         return true;
     }
 
-    public boolean delete(String filename) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<File> query = builder.createQuery(File.class);
-        Root<File> root = query.from(File.class);
-
-        query.select(root)
-                .where(builder.equal(root.get("name"), filename));
-
-        List<File> result = manager.createQuery(query)
-                .getResultList();
-
-        if (result.isEmpty())
-            throw new RuntimeException("File not found");
-        else {
-            for (File file:result) {
-                manager.remove(file);
-            }
-        }
+    public boolean delete(String filename, String user) {
+        File file = findFileByFilenameAndUser(filename, user);
+        manager.remove(file);
 
         return true;
     }
 
-    public File downloadByName(String filename) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<File> query = builder.createQuery(File.class);
-        Root<File> root = query.from(File.class);
-
-        query.select(root)
-                .where(builder.equal(root.get("name"), filename));
-
-        List<File> result = manager.createQuery(query)
-                .getResultList();
-
-        if (result.isEmpty())
-            throw new RuntimeException("File not found");
-        return result.get(0);
+    public File downloadByName(String filename, String user) {
+        return findFileByFilenameAndUser(filename, user);
     }
 
-    public boolean rename(String filename, String newFilename) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<File> query = builder.createQuery(File.class);
-        Root<File> root = query.from(File.class);
-
-        query.select(root)
-                .where(builder.equal(root.get("name"), filename));
-
-        List<File> result = manager.createQuery(query)
-                .getResultList();
-
-        if (result.isEmpty())
-            throw new RuntimeException("File not found");
-        else {
-            for (File file:result) {
-                file.setName(newFilename);
-                manager.merge(file);
-            }
-        }
+    public boolean rename(String filename, String newFilename, String user) {
+        File file = findFileByFilenameAndUser(filename, user);
+        file.setName(newFilename);
+        manager.merge(file);
 
         return true;
     }
@@ -102,5 +60,22 @@ public class FileRepository {
         return manager.createQuery(query)
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+    private File findFileByFilenameAndUser(String filename, String user) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<File> query = builder.createQuery(File.class);
+        Root<File> root = query.from(File.class);
+
+        query.select(root)
+                .where(builder.and(builder.equal(root.get("name"), filename),
+                        builder.equal(root.get("createUser"), user)));
+
+        List<File> result = manager.createQuery(query)
+                .getResultList();
+
+        if (result.isEmpty())
+            throw new RuntimeException("File not found");
+        return result.get(0);
     }
 }

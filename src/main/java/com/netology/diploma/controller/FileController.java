@@ -40,7 +40,7 @@ public class FileController {
 
             return fileService.upload(authToken, filename, file)
                     ? ResponseEntity.ok("Success upload")
-                    : new ResponseEntity<>("Unauthorized error", HttpStatus.UNAUTHORIZED);
+                    : new ResponseEntity<>("Error input data", HttpStatus.BAD_REQUEST);
         }
         catch (RuntimeException ex) {
             return new ResponseEntity<>("Error input data", HttpStatus.BAD_REQUEST);
@@ -58,7 +58,7 @@ public class FileController {
 
             return fileService.rename(authToken, filename, fileNameRequest.get("filename"))
                     ? ResponseEntity.ok("Success rename")
-                    : new ResponseEntity<>("Unauthorized error", HttpStatus.UNAUTHORIZED);
+                    : new ResponseEntity<>("Error input data", HttpStatus.BAD_REQUEST);
         }
         catch (RuntimeException ex) {
             return new ResponseEntity<>("Error upload file", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -76,7 +76,7 @@ public class FileController {
 
             return fileService.delete(authToken, filename) ?
                     ResponseEntity.ok("Success deleted")
-                    : new ResponseEntity<>("Unauthorized error", HttpStatus.UNAUTHORIZED);
+                    : new ResponseEntity<>("Error input data", HttpStatus.BAD_REQUEST);
         }
         catch (RuntimeException ex) {
             return new ResponseEntity<>("Error delete file", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -97,7 +97,7 @@ public class FileController {
                     return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
                     .body(file.getContent());
-            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Unauthorized error");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Error input data");
         }
         catch (RuntimeException ex) {
             throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error getting file list");
@@ -115,7 +115,7 @@ public class FileController {
 
             if (fileService.getList(authToken, limit) != null)
                 return ResponseEntity.ok(Mapper.map(fileService.getList(authToken, limit)));
-            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Unauthorized error");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Error input data");
         }
         catch (RuntimeException ex) {
             throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error getting file list");

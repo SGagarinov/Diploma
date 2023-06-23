@@ -21,32 +21,32 @@ public class FileService {
         this.tokenStorage = tokenStorage;
     }
 
-    public boolean upload(String authToken, String filename, MultipartFile file) throws IOException {
+    public Boolean upload(String authToken, String filename, MultipartFile file) throws IOException {
         User user = tokenStorage.getTokenList().get(authToken);
         if (user != null)
             return fileRepository.save(file, user.getLogin());
-        return false;
+        return null;
     }
 
-    public boolean delete(String authToken, String filename) {
+    public Boolean delete(String authToken, String filename) {
         User user = tokenStorage.getTokenList().get(authToken);
         if (user != null)
-            return fileRepository.delete(filename);
-        return false;
+            return fileRepository.delete(filename, user.getLogin());
+        return null;
     }
 
     public File download(String authToken, String filename) {
         User user = tokenStorage.getTokenList().get(authToken);
         if (user != null)
-            return fileRepository.downloadByName(filename);
+            return fileRepository.downloadByName(filename, user.getLogin());
         return null;
     }
 
-    public boolean rename(String authToken, String filename, String newFilename) {
+    public Boolean rename(String authToken, String filename, String newFilename) {
         User user = tokenStorage.getTokenList().get(authToken);
         if (user != null)
-            return fileRepository.rename(filename, newFilename);
-        return false;
+            return fileRepository.rename(filename, newFilename, user.getLogin());
+        return null;
     }
 
     public List<File> getList(String authToken, int limit) {
