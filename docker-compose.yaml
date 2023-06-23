@@ -1,0 +1,26 @@
+version: '1.0'
+
+services:
+  diplomaapp:
+    image: 'diploma:latest'
+    container_name: 'diploma'
+    ports:
+      - '5555:5555'
+    depends_on:
+      - service-db
+    environment:
+      - SERVER_PORT= 5555
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://service-db/diploma
+  service-db:
+    image: 'postgres:13.1-alpine'
+    ports:
+      - "15432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+    volumes:
+      - ./infrastructure/db/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  db-data:
